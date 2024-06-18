@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+    <title>Room {{ room_code }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body>
+    <h1>Room Code: {{ room_code }}</h1>
+    <div>
+        <iframe id="player" src="{{ embed_link }}" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div id="controls" style="display: none;">
+        <button onclick="sendControl('play')">Play</button>
+        <button onclick="sendControl('pause')">Pause</button>
+    </div>
+    <script>
+        var socket = io();
+        var room = "{{ room_code }}";
+        var player = document.getElementById('player');
+        var isController = "{{ request.remote_addr }}" === window.location.hostname;
+
+        socket.on('connect', function() {
+            socket.emit('join', {room: room});
+            if (isController) {
+                document.getElementById('controls').style.display = 'block';
+            }
+        });
+
+        socket.on('control', function(data) {
+            if (!isController) {
+                player.contentWindow.postMessage({action: data.action, time: data.time}, '*');
+            }
+        });
+
+        socket.on('sync', function(data) {
+            if (!isController) {
+                player.contentWindow.postMessage({action: data.state, time: data.time}, '*');
+            }
+        });
+
+        window.addEventListener('message', function(event) {
+            if (isController && event.data.currentTime !== undefined) {
+                sendControl(event.data.action, event.data.currentTime);
+            }
+        });
+
+        function sendControl(action, time) {
+            socket.emit('control', {room: room, action: action, time: time});
+        }
+
+        player.addEventListener('load', function() {
+            player.contentWindow.postMessage({action: 'getCurrentTime'}, '*');
+        });
+    </script>
+</body>
+</html>

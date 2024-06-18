@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+    <title>Movie Watch Party</title>
+</head>
+<body>
+    <h1>Create a Room</h1>
+    <form action="/create" method="post">
+        <label for="embed_link">Embed Link:</label>
+        <input type="text" id="embed_link" name="embed_link" required>
+        <button type="submit">Create Room</button>
+    </form>
+
+    <h1>Join a Room</h1>
+    <form action="/join" method="post">
+        <label for="room_code">Room Code:</label>
+        <input type="text" id="room_code" name="room_code" required>
+        <button type="submit">Join Room</button>
+    </form>
+</body>
+</html>
